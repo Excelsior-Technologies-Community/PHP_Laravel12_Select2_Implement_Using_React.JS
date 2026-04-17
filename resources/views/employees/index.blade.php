@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laravel + React Employee CRUD</title>
 
-    <!-- ✅ CSRF Token -->
+    <!--  CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <!-- ✅ Bootstrap 5 CSS CDN -->
+    <!--  Bootstrap 5 CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- ✅ React + Vite -->
+    <!--  React + Vite -->
     @viteReactRefresh
     @vite('resources/js/app.jsx')
 </head>
@@ -20,7 +20,7 @@
     <!-- React App Root -->
     <div id="app" data-employees='@json($employees)'></div>
 
-    <!-- ✅ Bootstrap 5 JS Bundle CDN (includes Popper) -->
+    <!--  Bootstrap 5 JS Bundle CDN (includes Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

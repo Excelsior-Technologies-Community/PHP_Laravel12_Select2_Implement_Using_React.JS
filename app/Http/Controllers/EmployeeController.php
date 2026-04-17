@@ -7,26 +7,16 @@ use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
-    /**
-     * Show all employees (active + soft-deleted if needed)
-     */
     public function index()
     {
-        // Only active employees for main table
-        $employees = Employee::where('status', 'active')->get();
-
-        // If you want to include soft-deleted:
-        // $employees = Employee::withTrashed()->get();
+        //  show all including deleted
+        $employees = Employee::withTrashed()->get();
 
         return view('employees.index', compact('employees'));
     }
 
-    /**
-     * Store a new employee
-     */
     public function store(Request $request)
     {
-        // ✅ Validate input
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:employees,email',
@@ -34,27 +24,21 @@ class EmployeeController extends Controller
             'skills' => 'required|array',
         ]);
 
-        // ✅ Create employee
-        $employee = Employee::create([
+        Employee::create([
             'name' => $request->name,
             'email' => $request->email,
             'mobile_no' => $request->mobile_no,
-            'skills' => json_encode($request->skills), // convert array → JSON
+            'skills' => json_encode($request->skills),
             'status' => 'active',
         ]);
 
-        // Redirect back with success message
-        return redirect()->back()->with('success', 'Employee created successfully!');
+        return back()->with('success', 'Employee created!');
     }
 
-    /**
-     * Update an existing employee
-     */
     public function update(Request $request, $id)
     {
         $employee = Employee::findOrFail($id);
 
-        // ✅ Validate input, ignore current employee's email for uniqueness
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:employees,email,' . $employee->id,
@@ -62,7 +46,6 @@ class EmployeeController extends Controller
             'skills' => 'required|array',
         ]);
 
-        // ✅ Update employee
         $employee->update([
             'name' => $request->name,
             'email' => $request->email,
@@ -70,22 +53,27 @@ class EmployeeController extends Controller
             'skills' => json_encode($request->skills),
         ]);
 
-        return redirect()->back()->with('success', 'Employee updated successfully!');
+        return back()->with('success', 'Employee updated!');
     }
 
-    /**
-     * Soft delete an employee
-     */
     public function destroy($id)
     {
         $employee = Employee::findOrFail($id);
 
-        // ✅ Mark status as deleted
         $employee->update(['status' => 'deleted']);
-
-        // ✅ Soft delete
         $employee->delete();
 
-        return redirect()->back()->with('success', 'Employee deleted successfully!');
+        return back()->with('success', 'Employee deleted!');
+    }
+
+    //  NEW RESTORE FUNCTION
+    public function restore($id)
+    {
+        $employee = Employee::withTrashed()->findOrFail($id);
+
+        $employee->update(['status' => 'active']);
+        $employee->restore();
+
+        return back()->with('success', 'Employee restored!');
     }
 }
