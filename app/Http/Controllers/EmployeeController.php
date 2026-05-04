@@ -9,8 +9,7 @@ class EmployeeController extends Controller
 {
     public function index()
     {
-        //  show all including deleted
-        $employees = Employee::withTrashed()->get();
+        $employees = Employee::withTrashed()->orderBy('id', 'desc')->get();
 
         return view('employees.index', compact('employees'));
     }
@@ -24,13 +23,21 @@ class EmployeeController extends Controller
             'skills' => 'required|array',
         ]);
 
-        Employee::create([
+        $employee = Employee::create([
             'name' => $request->name,
             'email' => $request->email,
             'mobile_no' => $request->mobile_no,
             'skills' => json_encode($request->skills),
             'status' => 'active',
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Employee created successfully!',
+                'employee' => $employee
+            ]);
+        }
 
         return back()->with('success', 'Employee created!');
     }
@@ -53,6 +60,13 @@ class EmployeeController extends Controller
             'skills' => json_encode($request->skills),
         ]);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Employee updated successfully!'
+            ]);
+        }
+
         return back()->with('success', 'Employee updated!');
     }
 
@@ -63,10 +77,16 @@ class EmployeeController extends Controller
         $employee->update(['status' => 'deleted']);
         $employee->delete();
 
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Employee deleted successfully!'
+            ]);
+        }
+
         return back()->with('success', 'Employee deleted!');
     }
 
-    //  NEW RESTORE FUNCTION
     public function restore($id)
     {
         $employee = Employee::withTrashed()->findOrFail($id);
@@ -74,6 +94,26 @@ class EmployeeController extends Controller
         $employee->update(['status' => 'active']);
         $employee->restore();
 
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Employee restored successfully!'
+            ]);
+        }
+
         return back()->with('success', 'Employee restored!');
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        
+        Employee::whereIn('id', $ids)->update(['status' => 'deleted']);
+        Employee::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Selected employees deleted successfully!'
+        ]);
     }
 }
